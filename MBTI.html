@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI性格测试 - 110题专业版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .slide-enter {
+            transform: translateX(30px);
+            opacity: 0;
+        }
+        .slide-enter-active {
+            transform: translateX(0);
+            opacity: 1;
+            transition: all 0.4s ease;
+        }
+        .option-selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            transform: scale(1.02);
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <!-- 引导页 -->
+        <div id="intro-page" class="bg-white rounded-2xl shadow-lg p-8 card-hover">
+            <div class="text-center mb-8">
+                <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mb-6 flex items-center justify-center animate-float">
+                    <i class="fas fa-brain text-white text-4xl"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">MBTI性格测试</h1>
+                <p class="text-gray-600 text-lg">110题专业版 - 深入探索你的性格类型</p>
+            </div>
+            
+            <div class="space-y-6 mb-8">
+                <div class="flex items-start">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-file-alt text-blue-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">全面测试</h3>
+                        <p class="text-gray-600">110道精心设计的题目，包含更多T/F维度题目，提供更精准的性格分析</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-bolt text-green-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">快速跳转</h3>
+                        <p class="text-gray-600">选择答案后0.2秒自动进入下一题，提供流畅的测试体验</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="bg-purple-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-random text-purple-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">随机顺序</h3>
+                        <p class="text-gray-600">题目顺序随机排列，每次测试都是新的体验</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center text-sm text-gray-500 mb-6">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                测试时间约8-12分钟，请确保在安静环境下完成
+            </div>
+            
+            <button onclick="startTest()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                开始专业测试
+            </button>
+        </div>
+
+        <!-- 测试页 -->
+        <div id="test-page" class="hidden">
+            <!-- 进度条 -->
+            <div class="bg-white rounded-xl shadow-md p-4 mb-6 card-hover">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>测试进度</span>
+                    <span id="progress-text">1/110</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full progress-bar" style="width: 0.91%"></div>
+                </div>
+            </div>
+
+            <!-- 问题卡片 -->
+            <div id="question-card" class="bg-white rounded-2xl shadow-lg p-6 mb-6 card-hover">
+                <h2 id="question-text" class="text-xl font-semibold mb-6 text-gray-800"></h2>
+                <div id="answers-container" class="space-y-4">
+                    <!-- 选项将通过JS动态生成 -->
+                </div>
+            </div>
+
+            <!-- 导航按钮 -->
+            <div class="flex flex-col space-y-4">
+                <div class="flex justify-between">
+                    <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-colors hidden">
+                        <i class="fas fa-arrow-left mr-2"></i>上一题
+                    </button>
+                    <button onclick="nextQuestion()" id="next-btn" class="ml-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl transition-colors hidden">
+                        下一题<i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- 放弃按钮 -->
+                <button onclick="giveUp()" id="give-up-btn" class="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 shadow-md shake">
+                    <i class="fas fa-sad-tear mr-2"></i>做不下去了😭不做了！！！
+                </button>
+            </div>
+        </div>
+
+        <!-- 结果页 -->
+        <div id="result-page" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <!-- 结果头部 -->
+                <div id="result-header" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 text-center">
+                    <h2 class="text-4xl font-bold mb-2" id="result-type">ESTJ</h2>
+                    <p class="text-xl opacity-90" id="result-title">总经理型人格</p>
+                    <div class="mt-4 flex justify-center space-x-2">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm">严谨务实</span>
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm">组织力强</span>
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm">责任感重</span>
+                    </div>
+                </div>
+
+                <!-- 准确性警告 -->
+                <div id="accuracy-warning" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 hidden">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700" id="warning-text">
+                                由于题目数量不够，以下结果可能不够准确(＾Ｕ＾)ノ~ＹＯ
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 维度分析 -->
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">性格维度分析</h3>
+                    <div class="space-y-6 mb-6">
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>内向 (I) <span id="i-score">0%</span></span>
+                                <span>外向 (E) <span id="e-score">0%</span></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="ei-bar" class="bg-blue-500 h-3 rounded-full transition-all duration-1000" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>实感 (S) <span id="s-score">0%</span></span>
+                                <span>直觉 (N) <span id="n-score">0%</span></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="sn-bar" class="bg-green-500 h-3 rounded-full transition-all duration-1000" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>思考 (T) <span id="t-score">0%</span></span>
+                                <span>情感 (F) <span id="f-score">0%</span></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="tf-bar" class="bg-red-500 h-3 rounded-full transition-all duration-1000" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>判断 (J) <span id="j-score">0%</span></span>
+                                <span>感知 (P) <span id="p-score">0%</span></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="jp-bar" class="bg-purple-500 h-3 rounded-full transition-all duration-1000" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-3 text-gray-800">性格概述</h3>
+                        <p id="result-description" class="text-gray-700 leading-relaxed">
+                            <!-- 结果描述将通过JS动态填充 -->
+                        </p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-3 text-gray-800">优势与潜在盲点</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-green-800 mb-2"><i class="fas fa-check-circle mr-2"></i>优势</h4>
+                                <ul id="strengths" class="text-green-700 text-sm list-disc pl-5">
+                                    <!-- 优势列表将通过JS动态填充 -->
+                                </ul>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-yellow-800 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>潜在盲点</h4>
+                                <ul id="weaknesses" class="text-yellow-700 text-sm list-disc pl-5">
+                                    <!-- 盲点列表将通过JS动态填充 -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3 text-gray-800">职业建议</h3>
+                        <p id="career-advice" class="text-gray-700 leading-relaxed">
+                            <!-- 职业建议将通过JS动态填充 -->
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t">
+                    <button onclick="restartTest()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors">
+                        <i class="fas fa-redo mr-2"></i>重新测试
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 问题和答案数据 - 原始90道题目
+        let questions = [
+            // 外向(E) vs 内向(I) 维度题目 (30题)
+            { text: "在社交聚会中，你通常：", options: [
+                { text: "与许多人交流，包括陌生人", type: "E" },
+                { text: "只与几个熟悉的人交谈", type: "I" }
+            ]},
+            { text: "你更喜欢怎样度过周末夜晚？", options: [
+                { text: "参加派对或社交活动", type: "E" },
+                { text: "在家看书或看电影", type: "I" }
+            ]},
+            { text: "当你需要思考问题时，你倾向于：", options: [
+                { text: "与他人讨论来理清思路", type: "E" },
+                { text: "独自思考并内化想法", type: "I" }
+            ]},
+            { text: "在团队项目中，你通常：", options: [
+                { text: "主动担任领导或协调角色", type: "E" },
+                { text: "专注于自己负责的部分", type: "I" }
+            ]},
+            { text: "当你感到压力时，你更可能：", options: [
+                { text: "找朋友聊天来缓解压力", type: "E" },
+                { text: "独处一段时间来恢复能量", type: "I" }
+            ]},
+            { text: "在会议上，你通常：", options: [
+                { text: "积极参与讨论并提出想法", type: "E" },
+                { text: "先倾听，只在必要时发言", type: "I" }
+            ]},
+            { text: "你如何描述你的朋友圈？", options: [
+                { text: "广泛但相对较浅", type: "E" },
+                { text: "小而深交", type: "I" }
+            ]},
+            { text: "当你遇到有趣的事情时，你的第一反应是：", options: [
+                { text: "立即与他人分享", type: "E" },
+                { text: "先自己品味和思考", type: "I" }
+            ]},
+            { text: "在陌生环境中，你倾向于：", options: [
+                { text: "主动介绍自己并结交新朋友", type: "E" },
+                { text: "先观察环境，慢慢适应", type: "I" }
+            ]},
+            { text: "你更喜欢的工作环境是：", options: [
+                { text: "开放、互动频繁的办公室", type: "E" },
+                { text: "安静、少干扰的独立空间", type: "I" }
+            ]},
+            { text: "当你需要做重要决定时，你倾向于：", options: [
+                { text: "与他人讨论各种可能性", type: "E" },
+                { text: "独自权衡利弊", type: "I" }
+            ]},
+            { text: "在社交网络上，你通常：", options: [
+                { text: "频繁发布状态并与多人互动", type: "E" },
+                { text: "主要浏览，偶尔与亲密朋友互动", type: "I" }
+            ]},
+            { text: "你如何描述你的沟通风格？", options: [
+                { text: "直接、外向、喜欢表达", type: "E" },
+                { text: "谨慎、内敛、善于倾听", type: "I" }
+            ]},
+            { text: "当你学习新知识时，你更喜欢：", options: [
+                { text: "小组讨论和互动学习", type: "E" },
+                { text: "独立阅读和研究", type: "I" }
+            ]},
+            { text: "在假期中，你倾向于：", options: [
+                { text: "安排充实的社交活动", type: "E" },
+                { text: "享受安静的独处时光", type: "I" }
+            ]},
+            { text: "当你完成一项重要工作后，你更可能：", options: [
+                { text: "立即与他人分享成果", type: "E" },
+                { text: "自己欣赏一会儿，再考虑分享", type: "I" }
+            ]},
+            { text: "在电话交流中，你通常：", options: [
+                { text: "喜欢长时间、广泛的对话", type: "E" },
+                { text: "偏好简短、重点明确的交流", type: "I" }
+            ]},
+            { text: "你如何应对冲突？", options: [
+                { text: "直接面对并公开讨论", type: "E" },
+                { text: "私下思考并谨慎处理", type: "I" }
+            ]},
+            { text: "当你感到无聊时，你倾向于：", options: [
+                { text: "找人聊天或参加活动", type: "E" },
+                { text: "独自寻找有趣的事情做", type: "I" }
+            ]},
+            { text: "在团队中，你更愿意扮演什么角色？", options: [
+                { text: "组织者和发言人", type: "E" },
+                { text: "思考者和执行者", type: "I" }
+            ]},
+            { text: "当你遇到困难时，你更可能：", options: [
+                { text: "立即寻求他人的帮助和建议", type: "E" },
+                { text: "先尝试自己解决问题", type: "I" }
+            ]},
+            { text: "你如何描述你的社交能量？", options: [
+                { text: "与人相处让我充满能量", type: "E" },
+                { text: "独处让我恢复能量", type: "I" }
+            ]},
+            { text: "在聚会中，当话题不感兴趣时，你倾向于：", options: [
+                { text: "主动引导话题到感兴趣的领域", type: "E" },
+                { text: "保持沉默或与个别人交谈", type: "I" }
+            ]},
+            { text: "你更喜欢哪种类型的书籍或电影？", options: [
+                { text: "充满动作和社交互动的", type: "E" },
+                { text: "深入探索内心世界的", type: "I" }
+            ]},
+            { text: "当你有一个新想法时，你倾向于：", options: [
+                { text: "立即与他人分享并讨论", type: "E" },
+                { text: "先自己完善再考虑分享", type: "I" }
+            ]},
+            { text: "在社交场合中，你更注重：", options: [
+                { text: "结识新朋友和扩大社交圈", type: "E" },
+                { text: "深化与少数人的关系", type: "I" }
+            ]},
+            { text: "你如何应对压力大的社交活动？", options: [
+                { text: "将其视为挑战并积极参与", type: "E" },
+                { text: "寻找机会短暂休息", type: "I" }
+            ]},
+            { text: "在团队决策中，你倾向于：", options: [
+                { text: "积极表达自己的观点", type: "E" },
+                { text: "先倾听再谨慎表达", type: "I" }
+            ]},
+            { text: "你更喜欢的工作反馈方式是：", options: [
+                { text: "面对面讨论和即时反馈", type: "E" },
+                { text: "书面形式以便仔细思考", type: "I" }
+            ]},
+            { text: "当你需要解决复杂问题时，你倾向于：", options: [
+                { text: "集思广益，团队讨论", type: "E" },
+                { text: "独自深入分析", type: "I" }
+            ]},
+            
+            // 实感(S) vs 直觉(N) 维度题目 (30题)
+            { text: "当你学习新事物时，你更注重：", options: [
+                { text: "具体的事实和细节", type: "S" },
+                { text: "整体的概念和可能性", type: "N" }
+            ]},
+            { text: "你更喜欢哪种类型的书籍？", options: [
+                { text: "基于事实的非虚构作品", type: "S" },
+                { text: "充满想象力的科幻或奇幻", type: "N" }
+            ]},
+            { text: "当你规划项目时，你倾向于：", options: [
+                { text: "关注具体的步骤和时间表", type: "S" },
+                { text: "关注整体的愿景和目标", type: "N" }
+            ]},
+            { text: "你如何描述你的思维方式？", options: [
+                { text: "实际、具体、注重现实", type: "S" },
+                { text: "抽象、概念性、关注可能性", type: "N" }
+            ]},
+            { text: "当你解决问题时，你更可能：", options: [
+                { text: "使用已知的有效方法", type: "S" },
+                { text: "尝试创新的解决方案", type: "N" }
+            ]},
+            { text: "你更喜欢哪种类型的假期？", options: [
+                { text: "有明确行程的观光旅游", type: "S" },
+                { text: "自由探索的冒险之旅", type: "N" }
+            ]},
+            { text: "当你描述事件时，你倾向于：", options: [
+                { text: "准确描述发生的具体细节", type: "S" },
+                { text: "关注事件的深层含义", type: "N" }
+            ]},
+            { text: "你更欣赏哪种能力？", options: [
+                { text: "注重细节和精确性", type: "S" },
+                { text: "看到大局和未来趋势", type: "N" }
+            ]},
+            { text: "当你学习新技能时，你更喜欢：", options: [
+                { text: "按部就班的指导", type: "S" },
+                { text: "自由探索和实验", type: "N" }
+            ]},
+            { text: "你如何看待传统？", options: [
+                { text: "尊重并遵循经过验证的方法", type: "S" },
+                { text: "愿意挑战并寻求改进", type: "N" }
+            ]},
+            { text: "当你做决定时，你更依赖：", options: [
+                { text: "过去的经验和具体数据", type: "S" },
+                { text: "直觉和未来可能性", type: "N" }
+            ]},
+            { text: "你更喜欢的工作环境是：", options: [
+                { text: "稳定、可预测的", type: "S" },
+                { text: "多变、充满新挑战的", type: "N" }
+            ]},
+            { text: "当你面对新信息时，你倾向于：", options: [
+                { text: "关注其实际应用价值", type: "S" },
+                { text: "探索其理论意义和联系", type: "N" }
+            ]},
+            { text: "你如何描述你的学习风格？", options: [
+                { text: "循序渐进，掌握细节", type: "S" },
+                { text: "跳跃式，关注概念联系", type: "N" }
+            ]},
+            { text: "当你规划未来时，你更关注：", options: [
+                { text: "具体的、可实现的目标", type: "S" },
+                { text: "广阔的愿景和可能性", type: "N" }
+            ]},
+            { text: "你更喜欢哪种类型的电影？", options: [
+                { text: "基于真实事件的故事片", type: "S" },
+                { text: "探索抽象概念的科幻片", type: "N" }
+            ]},
+            { text: "当你解决问题时，你更注重：", options: [
+                { text: "实际的、即时的解决方案", type: "S" },
+                { text: "长远的、根本性的解决", type: "N" }
+            ]},
+            { text: "你如何应对变化？", options: [
+                { text: "谨慎适应，注重稳定性", type: "S" },
+                { text: "积极拥抱，寻求新机会", type: "N" }
+            ]},
+            { text: "你更欣赏哪种类型的创意？", options: [
+                { text: "改进现有事物的实用创意", type: "S" },
+                { text: "突破传统的革命性创意", type: "N" }
+            ]},
+            { text: "当你与他人交流时，你倾向于：", options: [
+                { text: "使用具体例子和实际经验", type: "S" },
+                { text: "使用比喻和概念性语言", type: "N" }
+            ]},
+            { text: "你更喜欢哪种类型的游戏？", options: [
+                { text: "规则明确、目标具体的游戏", type: "S" },
+                { text: "开放结局、充满可能性的游戏", type: "N" }
+            ]},
+            { text: "当你回忆过去时，你更可能记住：", options: [
+                { text: "具体的细节和事实", type: "S" },
+                { text: "整体的感受和印象", type: "N" }
+            ]},
+            { text: "你如何描述你的注意力方向？", options: [
+                { text: "关注眼前的现实和细节", type: "S" },
+                { text: "关注未来的可能性和意义", type: "N" }
+            ]},
+            { text: "当你评估一个想法时，你更注重：", options: [
+                { text: "其实际可行性和具体应用", type: "S" },
+                { text: "其创新性和理论价值", type: "N" }
+            ]},
+            { text: "你更喜欢的工作任务是：", options: [
+                { text: "有明确步骤和标准的具体任务", type: "S" },
+                { text: "需要创造性解决的开放任务", type: "N" }
+            ]},
+            { text: "当你学习历史时，你更感兴趣于：", options: [
+                { text: "具体事件和日期", type: "S" },
+                { text: "历史趋势和深层原因", type: "N" }
+            ]},
+            { text: "你如何描述你的记忆特点？", options: [
+                { text: "擅长记住具体事实和细节", type: "S" },
+                { text: "擅长记住模式和联系", type: "N" }
+            ]},
+            { text: "当你面对新技术时，你倾向于：", options: [
+                { text: "关注其具体功能和使用方法", type: "S" },
+                { text: "探索其潜在应用和可能性", type: "N" }
+            ]},
+            { text: "你更喜欢哪种类型的艺术？", options: [
+                { text: "描绘现实世界的写实艺术", type: "S" },
+                { text: "表达抽象概念的现代艺术", type: "N" }
+            ]},
+            
+            // 思考(T) vs 情感(F) 维度题目 (15题)
+            { text: "当你做决定时，你更注重：", options: [
+                { text: "客观的逻辑和分析", type: "T" },
+                { text: "对人们的影响和感受", type: "F" }
+            ]},
+            { text: "在处理冲突时，你倾向于：", options: [
+                { text: "直接面对问题，基于事实解决", type: "T" },
+                { text: "考虑各方感受，寻求和谐", type: "F" }
+            ]},
+            { text: "你更欣赏哪种批评方式？", options: [
+                { text: "直接、客观、基于事实", type: "T" },
+                { text: "温和、考虑感受、有建设性", type: "F" }
+            ]},
+            { text: "当你评价他人工作时，你更注重：", options: [
+                { text: "工作的质量和效率", type: "T" },
+                { text: "付出的努力和意图", type: "F" }
+            ]},
+            { text: "在团队中，你更重视：", options: [
+                { text: "完成任务和目标", type: "T" },
+                { text: "维护团队和谐", type: "F" }
+            ]},
+            { text: "当你给予反馈时，你倾向于：", options: [
+                { text: "直接指出问题所在", type: "T" },
+                { text: "先肯定优点再提建议", type: "F" }
+            ]},
+            { text: "你如何描述你的价值观？", options: [
+                { text: "基于逻辑和一致性的原则", type: "T" },
+                { text: "基于同情和关怀的价值观", type: "F" }
+            ]},
+            { text: "当你面对道德困境时，你更可能：", options: [
+                { text: "应用普遍原则做决定", type: "T" },
+                { text: "考虑具体情境和受影响者", type: "F" }
+            ]},
+            { text: "你更欣赏哪种领导风格？", options: [
+                { text: "基于能力和效率的", type: "T" },
+                { text: "基于关怀和支持的", type: "F" }
+            ]},
+            { text: "当你解决问题时，你更注重：", options: [
+                { text: "问题本身的技术解决方案", type: "T" },
+                { text: "问题对相关人员的影响", type: "F" }
+            ]},
+            { text: "你如何描述你的沟通风格？", options: [
+                { text: "直接、简洁、注重事实", type: "T" },
+                { text: "委婉、体贴、考虑感受", type: "F" }
+            ]},
+            { text: "当你面对他人的情感表达时，你倾向于：", options: [
+                { text: "提供理性的解决方案", type: "T" },
+                { text: "提供情感支持和理解", type: "F" }
+            ]},
+            { text: "你更重视哪种能力？", options: [
+                { text: "批判性思维和分析能力", type: "T" },
+                { text: "同理心和人际理解能力", type: "F" }
+            ]},
+            { text: "当你做重要决定时，你更依赖：", options: [
+                { text: "客观数据和逻辑分析", type: "T" },
+                { text: "个人价值观和他人感受", type: "F" }
+            ]},
+            { text: "你如何看待规则和程序？", options: [
+                { text: "应该一致应用，确保公平", type: "T" },
+                { text: "应考虑具体情况灵活应用", type: "F" }
+            ]},
+            
+            // 判断(J) vs 感知(P) 维度题目 (15题)
+            { text: "你如何描述你的工作风格？", options: [
+                { text: "有计划、有条理、按时完成", type: "J" },
+                { text: "灵活、适应性强、随性", type: "P" }
+            ]},
+            { text: "当你规划项目时，你倾向于：", options: [
+                { text: "制定详细的计划和时间表", type: "J" },
+                { text: "保持灵活性，随情况调整", type: "P" }
+            ]},
+            { text: "你更喜欢的工作环境是：", options: [
+                { text: "结构清晰、可预测的", type: "J" },
+                { text: "开放、自由、少限制的", type: "P" }
+            ]},
+            { text: "当你面对最后期限时，你倾向于：", options: [
+                { text: "提前完成，避免最后一刻压力", type: "J" },
+                { text: "在压力下工作更高效", type: "P" }
+            ]},
+            { text: "你如何做决定？", options: [
+                { text: "快速、果断、喜欢有结论", type: "J" },
+                { text: "保持开放，收集更多信息", type: "P" }
+            ]},
+            { text: "你如何看待变化？", options: [
+                { text: "偏好稳定和可预测性", type: "J" },
+                { text: "欢迎变化和新可能性", type: "P" }
+            ]},
+            { text: "你如何管理时间？", options: [
+                { text: "按计划进行，注重效率", type: "J" },
+                { text: "随性而为，注重体验", type: "P" }
+            ]},
+            { text: "当你开始新项目时，你倾向于：", options: [
+                { text: "先制定完整计划再行动", type: "J" },
+                { text: "直接开始，边做边调整", type: "P" }
+            ]},
+            { text: "你更喜欢哪种学习方式？", options: [
+                { text: "有结构、有系统的学习", type: "J" },
+                { text: "自由探索、跟随兴趣", type: "P" }
+            ]},
+            { text: "你如何应对多任务？", options: [
+                { text: "偏好一次专注于一个任务", type: "J" },
+                { text: "喜欢同时进行多个任务", type: "P" }
+            ]},
+            { text: "你如何看待规则？", options: [
+                { text: "应该遵守，确保秩序", type: "J" },
+                { text: "是指导，可根据情况调整", type: "P" }
+            ]},
+            { text: "当你购物时，你倾向于：", options: [
+                { text: "有计划地购买所需物品", type: "J" },
+                { text: "随意浏览，发现有趣物品", type: "P" }
+            ]},
+            { text: "你如何描述你的生活空间？", options: [
+                { text: "整洁、有序、一切有固定位置", type: "J" },
+                { text: "舒适、随意、注重功能性", type: "P" }
+            ]},
+            { text: "当你度过周末时，你倾向于：", options: [
+                { text: "提前计划活动", type: "J" },
+                { text: "随心情决定做什么", type: "P" }
+            ]},
+            { text: "你如何看待承诺？", options: [
+                { text: "严肃对待，尽力遵守", type: "J" },
+                { text: "保持灵活性，可随情况调整", type: "P" }
+            ]}
+        ];
+
+        // 新增的20道T/F维度题目（针对用户反馈不够准确的问题）
+        const additionalTFQuestions = [
+            { text: "在评估一个项目时，你更关注：", options: [
+                { text: "项目的投资回报率和效率", type: "T" },
+                { text: "项目对员工士气和团队的影响", type: "F" }
+            ]},
+            { text: "当朋友遇到情感问题时，你通常会：", options: [
+                { text: "提供实际解决方案和建议", type: "T" },
+                { text: "首先给予情感支持和理解", type: "F" }
+            ]},
+            { text: "在做招聘决定时，你更看重候选人的：", options: [
+                { text: "专业技能和工作经验", type: "T" },
+                { text: "性格和文化契合度", type: "F" }
+            ]},
+            { text: "当团队发生冲突时，你的首要目标是：", options: [
+                { text: "找到问题的根源并解决它", type: "T" },
+                { text: "恢复团队的和谐与合作", type: "F" }
+            ]},
+            { text: "在评估他人的表现时，你更倾向于：", options: [
+                { text: "根据客观标准和指标进行评估", type: "T" },
+                { text: "考虑个人的努力和进步", type: "F" }
+            ]},
+            { text: "当需要做出艰难决定时，你更依赖：", options: [
+                { text: "数据和逻辑分析", type: "T" },
+                { text: "价值观和对他人的影响", type: "F" }
+            ]},
+            { text: "在给予批评时，你认为最重要的是：", options: [
+                { text: "确保批评准确、客观", type: "T" },
+                { text: "确保批评不会伤害对方感情", type: "F" }
+            ]},
+            { text: "在人际关系中，你更重视：", options: [
+                { text: "诚实和直率", type: "T" },
+                { text: "和谐与体谅", type: "F" }
+            ]},
+            { text: "当讨论有争议的话题时，你通常：", options: [
+                { text: "坚持事实和逻辑，不回避争论", type: "T" },
+                { text: "尽量避免冲突，寻求共识", type: "F" }
+            ]},
+            { text: "在评价艺术作品时，你更注重：", options: [
+                { text: "技巧、结构和创新性", type: "T" },
+                { text: "情感表达和共鸣", type: "F" }
+            ]},
+            { text: "在解决道德困境时，你更可能：", options: [
+                { text: "应用普遍的道德原则", type: "T" },
+                { text: "考虑具体情境中每个人的感受", type: "F" }
+            ]},
+            { text: "当朋友做出错误决定时，你通常会：", options: [
+                { text: "直接指出错误并解释原因", type: "T" },
+                { text: "温和地表达关心，尊重其选择", type: "F" }
+            ]},
+            { text: "在工作环境中，你更欣赏：", options: [
+                { text: "能力出众但可能难以相处的同事", type: "T" },
+                { text: "团队合作好但能力一般的同事", type: "F" }
+            ]},
+            { text: "在教育孩子时，你认为最重要的是：", options: [
+                { text: "培养逻辑思维和独立性", type: "T" },
+                { text: "培养同情心和情感表达", type: "F" }
+            ]},
+            { text: "在选择朋友时，你更看重：", options: [
+                { text: "共同的兴趣爱好和智力水平", type: "T" },
+                { text: "情感上的支持和理解", type: "F" }
+            ]},
+            { text: "在处理客户投诉时，你的首要目标是：", options: [
+                { text: "解决问题本身，防止再次发生", type: "T" },
+                { text: "安抚客户情绪，恢复满意度", type: "F" }
+            ]},
+            { text: "在评估社会政策时，你更关注：", options: [
+                { text: "政策的实际效果和效率", type: "T" },
+                { text: "政策对弱势群体的影响", type: "F" }
+            ]},
+            { text: "在个人关系中，你更愿意：", options: [
+                { text: "坦诚说出自己的想法，即使可能伤害对方", type: "T" },
+                { text: "有时隐瞒真相以维护关系和谐", type: "F" }
+            ]},
+            { text: "在评价他人的成功时，你更看重：", options: [
+                { text: "他们取得的实际成就和结果", type: "T" },
+                { text: "他们面对挑战时的态度和努力", type: "F" }
+            ]},
+            { text: "在规划个人生活时，你更倾向于：", options: [
+                { text: "设定明确的目标并制定计划", type: "T" },
+                { text: "跟随内心的感受和直觉", type: "F" }
+            ]}
+        ];
+
+        // 将新增的题目添加到总题目中
+        questions = questions.concat(additionalTFQuestions);
+
+        // MBTI类型描述
+        const typeDescriptions = {
+            "ISTJ": {
+                title: "物流师型人格",
+                description: "你认真负责，务实严谨，注重细节和事实。你喜欢有结构和秩序的环境，能够可靠地完成承诺的任务。你的决策基于逻辑和客观分析，在处理具体、实际的问题时表现出色。",
+                strengths: ["可靠和负责任", "注重细节和精确性", "有组织和条理", "实际和务实", "遵守承诺和规则"],
+                weaknesses: ["有时过于僵化", "对新想法持怀疑态度", "有时忽视整体图景", "不善于表达情感", "可能抵制变化"],
+                career: "适合需要精确性、条理性和可靠性的工作，如会计、数据分析、项目管理、法律工作等。你在结构清晰的环境中表现出色，能够有效管理资源和时间。"
+            },
+            "ISFJ": {
+                title: "守护者型人格", 
+                description: "你善良体贴，有强烈的责任感和同情心。你注重细节，勤奋努力，喜欢为他人提供实际帮助。你重视传统和稳定，在熟悉的环境中感到最舒适。",
+                strengths: ["有同情心和关怀他人", "可靠和尽责", "注重细节和实际", "忠诚和奉献", "有良好的组织能力"],
+                weaknesses: ["可能过于自我牺牲", "对批评敏感", "抵制变化", "难以设定界限", "可能忽视自己的需求"],
+                career: "适合需要关怀他人、注重细节的工作，如护理、教育、行政工作、客户服务等。你在支持性和服务性角色中表现出色。"
+            },
+            "INFJ": {
+                title: "提倡者型人格",
+                description: "你富有洞察力，有强烈的直觉和深刻的价值观。你关注他人的需求和潜能，致力于创造更美好的世界。你既有创造力又有组织能力，能够将理想转化为现实。",
+                strengths: ["有洞察力和直觉力", "有创造力和远见", "坚定于价值观", "有组织性和决断力", "关心他人成长"],
+                weaknesses: ["可能过于理想主义", "对批评敏感", "难以处理冲突", "可能忽视实际细节", "容易精疲力尽"],
+                career: "适合需要洞察力、创造力和帮助他人的工作，如心理咨询、写作、教育、人力资源等。你在能够发挥直觉和关怀他人的工作中表现出色。"
+            },
+            "INTJ": {
+                title: "建筑师型人格",
+                description: "你富有战略思维，独立自主，有很强的分析能力和远见。你能够看到复杂的模式和可能性，喜欢设计和实施高效的长期计划。你重视知识和能力，追求完美和效率。",
+                strengths: ["有战略思维和远见", "独立和自主", "有逻辑和分析能力", "有决断力", "注重效率和能力"],
+                weaknesses: ["可能过于批判性", "不善于表达赞赏", "可能显得傲慢", "不擅长处理情感", "对重复性工作缺乏耐心"],
+                career: "适合需要战略规划、分析和独立工作的领域，如科学、工程、计算机编程、战略规划等。你在能够发挥智力和远见的工作中表现出色。"
+            },
+            "ISTP": {
+                title: "鉴赏家型人格",
+                description: "你冷静务实，擅长分析和解决实际问题。你喜欢亲自动手，理解事物如何运作，并在危机时刻保持冷静。你重视自由和灵活性，喜欢随性而为。",
+                strengths: ["冷静和务实", "擅长解决实际问题", "灵活和适应性强", "理解机械系统", "在压力下保持冷静"],
+                weaknesses: ["可能显得冷漠", "对长期规划缺乏兴趣", "可能冒险过度", "不擅长表达情感", "可能抵制承诺"],
+                career: "适合需要动手能力、解决问题和灵活性的工作，如工程技术、急救服务、机械维修、数据分析等。你在需要即时解决问题的工作中表现出色。"
+            },
+            "ISFP": {
+                title: "探险家型人格",
+                description: "你友善敏感，有艺术气质，注重当下的体验和感受。你灵活随和，喜欢以实际方式帮助他人。你重视和谐，避免冲突，享受生活中的美好事物。",
+                strengths: ["有艺术感和审美", "灵活和随和", "关心他人感受", "注重实际帮助", "享受当下时刻"],
+                weaknesses: ["可能过于敏感", "避免冲突和批评", "难以做决定", "可能忽视长期规划", "对压力敏感"],
+                career: "适合需要艺术感、灵活性和实际帮助的工作，如艺术、设计、护理、教育、环境保护等。你在能够发挥创造力和帮助他人的工作中表现出色。"
+            },
+            "INFP": {
+                title: "调解员型人格", 
+                description: "你理想主义，有深刻的价值观和丰富的内心世界。你富有同情心，关心他人的福祉，希望让世界变得更美好。你灵活适应，喜欢探索可能性和意义。",
+                strengths: ["有理想和价值观", "有同情心和理解力", "适应性强", "有创造力", "忠诚于信仰"],
+                weaknesses: ["可能过于理想主义", "对批评敏感", "难以处理冲突", "可能不切实际", "容易精疲力尽"],
+                career: "适合需要创造力、价值观和帮助他人的工作，如写作、咨询、教育、艺术、社会服务等。你在能够表达价值观和帮助他人的工作中表现出色。"
+            },
+            "INTP": {
+                title: "逻辑学家型人格",
+                description: "你好奇创新，喜欢理论思考和复杂问题。你独立自主，有很强的分析能力，能够看到模式和可能性。你重视知识和逻辑，追求理解和解释世界。",
+                strengths: ["有逻辑和分析能力", "有创造力和创新", "独立和自主", "有好奇心", "理解复杂概念"],
+                weaknesses: ["可能过于抽象", "不注重实际应用", "可能显得冷漠", "不擅长社交", "可能拖延决策"],
+                career: "适合需要分析、理论和创新思维的工作，如科学研究、计算机编程、哲学、工程、学术研究等。你在能够发挥智力和分析能力的工作中表现出色。"
+            },
+            "ESTP": {
+                title: "企业家型人格",
+                description: "你精力充沛，务实果断，擅长应对即时挑战和机遇。你喜欢行动和冒险，能够快速做出决定并适应变化。你注重实际结果，享受生活中的刺激和乐趣。",
+                strengths: ["精力充沛和果断", "实用和务实", "适应性强", "擅长危机处理", "有说服力"],
+                weaknesses: ["可能冲动冒险", "对长期规划缺乏耐心", "可能忽视他人感受", "容易感到无聊", "可能不注重细节"],
+                career: "适合需要行动力、适应性和务实精神的工作，如销售、创业、应急服务、体育、娱乐等。你在充满挑战和变化的环境中表现出色。"
+            },
+            "ESFP": {
+                title: "表演者型人格",
+                description: "你热情友好，充满活力，喜欢与他人互动和享受生活。你注重当下的体验和感受，灵活适应环境变化。你有很强的实践能力，能够以实际方式帮助他人。",
+                strengths: ["热情和友好", "有实践能力", "灵活和适应性强", "有观察力", "使工作变得有趣"],
+                weaknesses: ["可能不注重长期规划", "对理论缺乏兴趣", "可能避免冲突", "容易分心", "可能不擅长抽象思维"],
+                career: "适合需要人际互动、实践能力和活力的工作，如教育、销售、艺术表演、客户服务、活动策划等。你在能够与人互动和实际帮助他人的工作中表现出色。"
+            },
+            "ENFP": {
+                title: "竞选者型人格",
+                description: "你热情洋溢，充满好奇心，能够看到可能性和潜力。你富有创造力，善于激励他人，喜欢探索新的想法和体验。你重视人际关系，能够理解和支持他人。",
+                strengths: ["热情和充满活力", "有创造力和想象力", "有洞察力", "善于沟通", "适应性强"],
+                weaknesses: ["可能不注重细节", "容易过度承诺", "对常规缺乏耐心", "可能不切实际", "容易精疲力尽"],
+                career: "适合需要创造力、人际交往和灵活性的工作，如咨询、教育、艺术、公关、创业等。你在能够发挥创造力和与人互动的工作中表现出色。"
+            },
+            "ENTP": {
+                title: "辩论家型人格",
+                description: "你聪明机智，富有创新精神，喜欢智力挑战和辩论。你能够看到多种可能性，善于解决复杂问题。你独立自主，喜欢自由探索新的想法和概念。",
+                strengths: ["聪明和机智", "有创新精神", "有企业家精神", "善于辩论", "理解复杂概念"],
+                weaknesses: ["可能喜欢争论", "对常规缺乏耐心", "可能不注重细节", "可能不擅长执行", "容易感到无聊"],
+                career: "适合需要创新、战略思考和辩论能力的工作，如创业、法律、咨询、工程、市场营销等。你在能够发挥智力和创新思维的工作中表现出色。"
+            },
+            "ESTJ": {
+                title: "总经理型人格",
+                description: "你务实果断，有很强的组织能力和责任感。你喜欢结构和秩序，能够高效地管理和执行任务。你注重传统和规则，重视实际结果和效率。",
+                strengths: ["有组织能力", "务实和果断", "可靠和负责任", "注重效率", "有领导能力"],
+                weaknesses: ["可能过于僵化", "对非常规想法缺乏耐心", "可能忽视他人感受", "可能过于批判", "抵制变化"],
+                career: "适合需要组织能力、决策力和管理技能的工作，如管理、法律、军事、金融、项目管理等。你在结构清晰和需要领导力的环境中表现出色。"
+            },
+            "ESFJ": {
+                title: "执政官型人格",
+                description: "你友善体贴，有很强的社交能力和责任感。你喜欢帮助他人，重视和谐与合作。你注重实际细节，能够有效地组织和管理日常事务。",
+                strengths: ["友善和体贴", "有合作精神", "可靠和尽责", "注重实际帮助", "有组织能力"],
+                weaknesses: ["对批评敏感", "可能过于传统", "可能忽视整体图景", "难以处理冲突", "可能过度自我牺牲"],
+                career: "适合需要人际交往、关怀他人和组织能力的工作，如教育、医疗、行政、客户服务、人力资源等。你在支持性和服务性角色中表现出色。"
+            },
+            "ENFJ": {
+                title: "主人公型人格",
+                description: "你富有魅力，有很强的沟通能力和领导才能。你关心他人成长，能够激励和团结团队。你注重价值观和和谐，喜欢帮助他人实现潜能。",
+                strengths: ["有魅力和说服力", "有领导才能", "有洞察力", "善于沟通", "关心他人成长"],
+                weaknesses: ["对批评敏感", "可能过于理想主义", "可能忽视实际细节", "难以处理冲突", "容易精疲力尽"],
+                career: "适合需要领导力、沟通能力和帮助他人的工作，如教育、咨询、人力资源、公关、宗教工作等。你在能够发挥人际交往和领导能力的工作中表现出色。"
+            },
+            "ENTJ": {
+                title: "指挥官型人格",
+                description: "你果断自信，有很强的战略思维和领导能力。你喜欢挑战，能够快速做出决策并实施计划。你注重效率和能力，追求卓越和成功。",
+                strengths: ["果断和自信", "有战略思维", "有领导能力", "注重效率", "善于规划"],
+                weaknesses: ["可能过于强势", "对低效缺乏耐心", "可能忽视他人感受", "可能过于批判", "不擅长处理情感"],
+                career: "适合需要领导力、战略规划和决策能力的工作，如管理、法律、咨询、创业、金融等。你在挑战性和需要领导力的环境中表现出色。"
+            }
+        };
+
+        let currentQuestionIndex = 0;
+        let answers = [];
+        let selectedOptionIndex = null;
+        let autoNextTimer = null;
+        let gaveUp = false; // 标记是否提前结束测试
+
+        // 随机排序数组函数
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startTest() {
+            // 随机打乱题目顺序
+            questions = shuffleArray(questions);
+            
+            // 重置所有变量
+            currentQuestionIndex = 0;
+            answers = [];
+            selectedOptionIndex = null;
+            gaveUp = false;
+            clearTimeout(autoNextTimer);
+            
+            document.getElementById('intro-page').classList.add('hidden');
+            document.getElementById('test-page').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestionIndex];
+            document.getElementById('question-text').textContent = question.text;
+            
+            const answersContainer = document.getElementById('answers-container');
+            answersContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionButton = document.createElement('button');
+                optionButton.className = 'w-full text-left p-4 border-2 border-gray-200 rounded-xl hover:border-blue-300 transition-all duration-200 option-btn';
+                optionButton.innerHTML = `
+                    <span class="font-medium text-gray-800">${String.fromCharCode(65 + index)}. ${option.text}</span>
+                `;
+                
+                optionButton.addEventListener('click', () => selectOption(index));
+                
+                answersContainer.appendChild(optionButton);
+            });
+            
+            // 更新进度
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = (currentQuestionIndex + 1) + '/' + questions.length;
+            
+            // 更新按钮状态
+            document.getElementById('prev-btn').classList.toggle('hidden', currentQuestionIndex === 0);
+            document.getElementById('next-btn').classList.toggle('hidden', true);
+            
+            // 重置选项状态
+            selectedOptionIndex = null;
+        }
+
+        function selectOption(optionIndex) {
+            // 移除之前选项的选中样式
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('option-selected', 'border-blue-500');
+            });
+            
+            // 设置新选项为选中状态
+            selectedOptionIndex = optionIndex;
+            document.querySelectorAll('.option-btn')[optionIndex].classList.add('option-selected', 'border-blue-500');
+            
+            // 显示下一题按钮
+            document.getElementById('next-btn').classList.remove('hidden');
+            
+            // 设置自动跳转计时器（200毫秒后自动跳转）
+            clearTimeout(autoNextTimer);
+            autoNextTimer = setTimeout(() => {
+                if (selectedOptionIndex !== null) {
+                    nextQuestion();
+                }
+            }, 200); // 修改为200毫秒
+        }
+
+        function nextQuestion() {
+            clearTimeout(autoNextTimer);
+            
+            if (selectedOptionIndex === null) {
+                alert('请选择一个选项');
+                return;
+            }
+            
+            const question = questions[currentQuestionIndex];
+            const selectedTrait = question.options[selectedOptionIndex].type;
+            answers.push(selectedTrait);
+            
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function prevQuestion() {
+            clearTimeout(autoNextTimer);
+            
+            if (currentQuestionIndex > 0) {
+                answers.pop();
+                currentQuestionIndex--;
+                showQuestion();
+            }
+        }
+
+        // 提前结束测试函数
+        function giveUp() {
+            if (answers.length < 10) {
+                if (!confirm("你只回答了" + answers.length + "道题，结果可能非常不准确。确定要提前结束吗？")) {
+                    return;
+                }
+            } else {
+                if (!confirm("你已经回答了" + answers.length + "道题，确定要提前结束测试吗？")) {
+                    return;
+                }
+            }
+            
+            gaveUp = true;
+            showResult();
+        }
+
+        function showResult() {
+            // 计算MBTI类型
+            const counts = {
+                'E': 0, 'I': 0,
+                'S': 0, 'N': 0,
+                'T': 0, 'F': 0,
+                'J': 0, 'P': 0
+            };
+            
+            answers.forEach(trait => {
+                counts[trait]++;
+            });
+            
+            // 计算每个维度的百分比
+            const eiTotal = counts.E + counts.I || 1;
+            const snTotal = counts.S + counts.N || 1;
+            const tfTotal = counts.T + counts.F || 1;
+            const jpTotal = counts.J + counts.P || 1;
+            
+            const ePercent = Math.round((counts.E / eiTotal) * 100);
+            const iPercent = Math.round((counts.I / eiTotal) * 100);
+            const sPercent = Math.round((counts.S / snTotal) * 100);
+            const nPercent = Math.round((counts.N / snTotal) * 100);
+            const tPercent = Math.round((counts.T / tfTotal) * 100);
+            const fPercent = Math.round((counts.F / tfTotal) * 100);
+            const jPercent = Math.round((counts.J / jpTotal) * 100);
+            const pPercent = Math.round((counts.P / jpTotal) * 100);
+            
+            const mbtiType = 
+                (counts.E > counts.I ? 'E' : (counts.E < counts.I ? 'I' : (Math.random() > 0.5 ? 'E' : 'I'))) +
+                (counts.S > counts.N ? 'S' : (counts.S < counts.N ? 'N' : (Math.random() > 0.5 ? 'S' : 'N'))) +
+                (counts.T > counts.F ? 'T' : (counts.T < counts.F ? 'F' : (Math.random() > 0.5 ? 'T' : 'F'))) +
+                (counts.J > counts.P ? 'J' : (counts.J < counts.P ? 'P' : (Math.random() > 0.5 ? 'J' : 'P')));
+            
+            // 显示结果
+            document.getElementById('test-page').classList.add('hidden');
+            document.getElementById('result-page').classList.remove('hidden');
+            
+            // 如果提前结束，显示准确性警告
+            if (gaveUp || answers.length < questions.length) {
+                document.getElementById('accuracy-warning').classList.remove('hidden');
+                const warningText = `你只完成了${answers.length}/${questions.length}道题，由于题目数量不够，以下结果可能不够准确(＾Ｕ＾)ノ~ＹＯ`;
+                document.getElementById('warning-text').textContent = warningText;
+            } else {
+                document.getElementById('accuracy-warning').classList.add('hidden');
+            }
+            
+            document.getElementById('result-type').textContent = mbtiType;
+            
+            const description = typeDescriptions[mbtiType] || {
+                title: '未知类型',
+                description: '暂无相关描述信息',
+                strengths: ['信息不足'],
+                weaknesses: ['信息不足'],
+                career: '信息不足'
+            };
+            
+            document.getElementById('result-title').textContent = description.title;
+            document.getElementById('result-description').textContent = description.description;
+            document.getElementById('career-advice').textContent = description.career;
+            
+            // 更新优势列表
+            const strengthsList = document.getElementById('strengths');
+            strengthsList.innerHTML = '';
+            description.strengths.forEach(strength => {
+                const li = document.createElement('li');
+                li.textContent = strength;
+                strengthsList.appendChild(li);
+            });
+            
+            // 更新盲点列表
+            const weaknessesList = document.getElementById('weaknesses');
+            weaknessesList.innerHTML = '';
+            description.weaknesses.forEach(weakness => {
+                const li = document.createElement('li');
+                li.textContent = weakness;
+                weaknessesList.appendChild(li);
+            });
+            
+            // 更新维度条和百分比
+            updateDimensionBars(counts, ePercent, iPercent, sPercent, nPercent, tPercent, fPercent, jPercent, pPercent);
+        }
+
+        function updateDimensionBars(counts, ePercent, iPercent, sPercent, nPercent, tPercent, fPercent, jPercent, pPercent) {
+            // 更新E/I维度
+            const eiTotal = counts.E + counts.I || 1;
+            const eiWidth = (counts.E / eiTotal) * 100;
+            document.getElementById('ei-bar').style.width = eiWidth + '%';
+            document.getElementById('e-score').textContent = ePercent + '%';
+            document.getElementById('i-score').textContent = iPercent + '%';
+            
+            // 更新S/N维度
+            const snTotal = counts.S + counts.N || 1;
+            const snWidth = (counts.S / snTotal) * 100;
+            document.getElementById('sn-bar').style.width = snWidth + '%';
+            document.getElementById('s-score').textContent = sPercent + '%';
+            document.getElementById('n-score').textContent = nPercent + '%';
+            
+            // 更新T/F维度
+            const tfTotal = counts.T + counts.F || 1;
+            const tfWidth = (counts.T / tfTotal) * 100;
+            document.getElementById('tf-bar').style.width = tfWidth + '%';
+            document.getElementById('t-score').textContent = tPercent + '%';
+            document.getElementById('f-score').textContent = fPercent + '%';
+            
+            // 更新J/P维度
+            const jpTotal = counts.J + counts.P || 1;
+            const jpWidth = (counts.J / jpTotal) * 100;
+            document.getElementById('jp-bar').style.width = jpWidth + '%';
+            document.getElementById('j-score').textContent = jPercent + '%';
+            document.getElementById('p-score').textContent = pPercent + '%';
+        }
+
+        function restartTest() {
+            currentQuestionIndex = 0;
+            answers = [];
+            selectedOptionIndex = null;
+            gaveUp = false;
+            clearTimeout(autoNextTimer);
+            
+            document.getElementById('result-page').classList.add('hidden');
+            document.getElementById('intro-page').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
